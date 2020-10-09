@@ -32,22 +32,22 @@ BME280 myBME280;
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial.println();
-  Serial.println("Apply BME280 data to CCS811 for compensation.");
+  SerialUSB.begin(9600);
+  SerialUSB.println();
+  SerialUSB.println("Apply BME280 data to CCS811 for compensation.");
   
   Wire.begin();//initialize I2C bus
   
   //This begins the CCS811 sensor and prints error status of .begin()
-  CCS811Core::status returnCode = myCCS811.begin();
-  if (returnCode != CCS811Core::SENSOR_SUCCESS)
+  CCS811Core::CCS811_Status_e returnCode = myCCS811.beginWithStatus ();
+  if (returnCode != CCS811Core::CCS811_Stat_SUCCESS)
   {
-    Serial.println("Problem with CCS811");
+    SerialUSB.println("Problem with CCS811");
     printDriverError(returnCode);
   }
   else
   {
-    Serial.println("CCS811 online");
+    SerialUSB.println("CCS811 online");
   }
 
   
@@ -67,11 +67,11 @@ void setup()
   byte id = myBME280.begin(); //Returns ID of 0x60 if successful
   if (id != 0x60)
   {
-    Serial.println("Problem with BME280");
+    SerialUSB.println("Problem with BME280");
   }
   else
   {
-    Serial.println("BME280 online");
+    SerialUSB.println("BME280 online");
   }
 
 
@@ -90,18 +90,18 @@ void loop()
     float BMEtempC = myBME280.readTempC();
     float BMEhumid = myBME280.readFloatHumidity();
 
-    Serial.print("Applying new values (deg C, %): ");
-    Serial.print(BMEtempC);
-    Serial.print(",");
-    Serial.println(BMEhumid);
-    Serial.println();
+    SerialUSB.print("Applying new values (deg C, %): ");
+    SerialUSB.print(BMEtempC);
+    SerialUSB.print(",");
+    SerialUSB.println(BMEhumid);
+    SerialUSB.println();
 
     //This sends the temperature data to the CCS811
     myCCS811.setEnvironmentalData(BMEhumid, BMEtempC);
   }
   else if (myCCS811.checkForStatusError())
   {
-    Serial.println(myCCS811.getErrorRegister()); //Prints whatever CSS811 error flags are detected
+    SerialUSB.println(myCCS811.getErrorRegister()); //Prints whatever CSS811 error flags are detected
   }
 
   delay(2000); //Wait for next reading
@@ -110,70 +110,71 @@ void loop()
 //---------------------------------------------------------------
 void printData()
 {
-  Serial.print(" CO2[");
-  Serial.print(myCCS811.getCO2());
-  Serial.print("]ppm");
+  SerialUSB.print(" CO2[");
+  SerialUSB.print(myCCS811.getCO2());
+  SerialUSB.print("]ppm");
 
-  Serial.print(" TVOC[");
-  Serial.print(myCCS811.getTVOC());
-  Serial.print("]ppb");
+  SerialUSB.print(" TVOC[");
+  SerialUSB.print(myCCS811.getTVOC());
+  SerialUSB.print("]ppb");
 
-  Serial.print(" temp[");
-  Serial.print(myBME280.readTempC(), 1);
-  Serial.print("]C");
+  SerialUSB.print(" temp[");
+  SerialUSB.print(myBME280.readTempC(), 1);
+  SerialUSB.print("]C");
 
-  //Serial.print(" temp[");
-  //Serial.print(myBME280.readTempF(), 1);
-  //Serial.print("]F");
+  //SerialUSB.print(" temp[");
+  //SerialUSB.print(myBME280.readTempF(), 1);
+  //SerialUSB.print("]F");
 
-  Serial.print(" pressure[");
-  Serial.print(myBME280.readFloatPressure(), 2);
-  Serial.print("]Pa");
+  SerialUSB.print(" pressure[");
+  SerialUSB.print(myBME280.readFloatPressure(), 2);
+  SerialUSB.print("]Pa");
 
-  //Serial.print(" pressure[");
-  //Serial.print((myBME280.readFloatPressure() * 0.0002953), 2);
-  //Serial.print("]InHg");
+  //SerialUSB.print(" pressure[");
+  //SerialUSB.print((myBME280.readFloatPressure() * 0.0002953), 2);
+  //SerialUSB.print("]InHg");
 
-  //Serial.print("altitude[");
-  //Serial.print(myBME280.readFloatAltitudeMeters(), 2);
-  //Serial.print("]m");
+  //SerialUSB.print("altitude[");
+  //SerialUSB.print(myBME280.readFloatAltitudeMeters(), 2);
+  //SerialUSB.print("]m");
 
-  //Serial.print("altitude[");
-  //Serial.print(myBME280.readFloatAltitudeFeet(), 2);
-  //Serial.print("]ft");
+  //SerialUSB.print("altitude[");
+  //SerialUSB.print(myBME280.readFloatAltitudeFeet(), 2);
+  //SerialUSB.print("]ft");
 
-  Serial.print(" humidity[");
-  Serial.print(myBME280.readFloatHumidity(), 0);
-  Serial.print("]%");
+  SerialUSB.print(" humidity[");
+  SerialUSB.print(myBME280.readFloatHumidity(), 0);
+  SerialUSB.print("]%");
 
-  Serial.println();
+  SerialUSB.println();
 }
 
 //printDriverError decodes the CCS811Core::status type and prints the
-//type of error to the serial terminal.
+//type of error to the SerialUSB terminal.
 //
 //Save the return value of any function of type CCS811Core::status, then pass
 //to this function to see what the output was.
-void printDriverError( CCS811Core::status errorCode )
+void printDriverError( CCS811Core::CCS811_Status_e errorCode )
 {
   switch ( errorCode )
   {
-    case CCS811Core::SENSOR_SUCCESS:
-      Serial.print("SUCCESS");
+    case CCS811Core::CCS811_Stat_SUCCESS:
+      SerialUSB.print("SUCCESS");
       break;
-    case CCS811Core::SENSOR_ID_ERROR:
-      Serial.print("ID_ERROR");
+    case CCS811Core::CCS811_Stat_ID_ERROR:
+      SerialUSB.print("ID_ERROR");
       break;
-    case CCS811Core::SENSOR_I2C_ERROR:
-      Serial.print("I2C_ERROR");
+    case CCS811Core::CCS811_Stat_I2C_ERROR:
+      SerialUSB.print("I2C_ERROR");
       break;
-    case CCS811Core::SENSOR_INTERNAL_ERROR:
-      Serial.print("INTERNAL_ERROR");
+    case CCS811Core::CCS811_Stat_INTERNAL_ERROR:
+      SerialUSB.print("INTERNAL_ERROR");
       break;
-    case CCS811Core::SENSOR_GENERIC_ERROR:
-      Serial.print("GENERIC_ERROR");
+    //case CCS811Core::SENSOR_GENERIC_ERROR:
+    case CCS811Core::CCS811_Stat_GENERIC_ERROR:
+      SerialUSB.print("GENERIC_ERROR");
       break;
     default:
-      Serial.print("Unspecified error.");
+      SerialUSB.print("Unspecified error.");
   }
 }
